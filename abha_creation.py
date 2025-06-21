@@ -207,7 +207,7 @@ def download_abha_card(token: str, x_token: str):
     # Save the PDF or image
     with open("abha_card.jpg", "wb") as f:
         f.write(response.content)
-    print("✅ ABHA Card downloaded as 'abha_card.pdf'")
+    print("✅ ABHA Card downloaded as 'abha_card.jpg'")
 
 
 # download_abha_card(token, x_token)
