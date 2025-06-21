@@ -6,14 +6,6 @@ import uuid
 from datetime import datetime, timezone
 
 
-# gateway_token = get_gateway_token()
-# print("✅ Gateway Token fetched.")
-
-# token = get_bearer_token(CLIENT_ID, CLIENT_SECRET)
-# print("✅ Access Token fetched.")
-
-# encrypted_abha_number = encrypt_rsa("91-2306-6677-1756", gateway_token)
-
 
 ##Verify using aadhaar no otp
 # send otp
@@ -49,10 +41,6 @@ def send_otp(token: str, encrypted_abha_number: str):
         return None
 
 
-# txn_id = send_otp(token, encrypted_abha_number)
-# # Verify OTP
-# otp = input("Enter the OTP: ")
-# encrypted_otp = encrypt_rsa(otp, gateway_token)
 
 
 def verify_otp(token: str, txn_id: str, encrypted_otp: str):
@@ -85,9 +73,6 @@ def verify_otp(token: str, txn_id: str, encrypted_otp: str):
     else:
         print(f"❌ Error {response.status_code}: {response.text}")
         return None
-
-
-# verify_otp(token, txn_id, encrypted_otp)
 
 
 # ##Verify using abha number's phone number
@@ -125,11 +110,6 @@ def send_otp_abha_number(token: str, encrypted_abha_number: str):
         return None
 
 
-# txn_id = send_otp_abha_number(token, encrypted_abha_number)
-
-
-# otp = input("Enter the OTP: ")
-# encrypted_otp = encrypt_rsa(otp, gateway_token)
 
 
 def verify_otp_abha_number(token: str, txn_id: str, encrypted_otp: str):
@@ -164,11 +144,11 @@ def verify_otp_abha_number(token: str, txn_id: str, encrypted_otp: str):
         return None
 
 
-# verify_otp_abha_number(token, txn_id, encrypted_otp)
+
 
 # ###Verify using AADHAAR
 
-# encrypted_aadhaar_number = encrypt_rsa("521527681066", gateway_token)
+
 
 
 def send_otp_aadhaar(token: str, encrypted_aadhaar_number: str):
@@ -203,12 +183,6 @@ def send_otp_aadhaar(token: str, encrypted_aadhaar_number: str):
         return None
 
 
-# txn_id = send_otp_abha_number(token, encrypted_abha_number)
-
-
-# otp = input("Enter the OTP: ")
-# encrypted_otp = encrypt_rsa(otp, gateway_token)
-
 
 def verify_otp_aadhaar(token: str, txn_id: str, encrypted_otp: str):
     """Send request to verify OTP using txnId and encrypted OTP for Aadhaar"""
@@ -242,4 +216,3 @@ def verify_otp_aadhaar(token: str, txn_id: str, encrypted_otp: str):
         return None
 
 
-# verify_otp_abha_number(token, txn_id, encrypted_otp)
