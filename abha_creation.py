@@ -7,17 +7,17 @@ import uuid
 from datetime import datetime, timezone
 
 
-gateway_token = get_gateway_token()
-print("✅ Gateway Token fetched.")
+# gateway_token = get_gateway_token()
+# print("✅ Gateway Token fetched.")
 
-token = get_bearer_token(CLIENT_ID, CLIENT_SECRET)
-print("✅ Access Token fetched.")
+# token = get_bearer_token(CLIENT_ID, CLIENT_SECRET)
+# print("✅ Access Token fetched.")
 
 # Creation of ABHA
 
 ##Thru aadhaar OTP
 
-encrypted_aadhaar = encrypt_rsa("521527681066", gateway_token)
+# encrypted_aadhaar = encrypt_rsa("521527681066", gateway_token)
 
 
 # Requeest otp for enrolment
@@ -59,12 +59,12 @@ def request_abha_otp(token: str, encrypted_aadhaar: str) -> str:
     return txn_id
 
 
-txn_id = request_abha_otp(token, encrypted_aadhaar)
+# txn_id = request_abha_otp(token, encrypted_aadhaar)
 
 # enrol by aadhar verification
-otp = input("Enter the OTP: ")
-otp_value = encrypt_rsa(otp, gateway_token)
-mobile = "8839843815"
+# otp = input("Enter the OTP: ")
+# otp_value = encrypt_rsa(otp, gateway_token)
+# mobile = "8839843815"
 
 
 def enrol_by_aadhaar(token: str, txn_id: str, encrypted_otp: str, mobile: str):
@@ -106,15 +106,14 @@ def enrol_by_aadhaar(token: str, txn_id: str, encrypted_otp: str, mobile: str):
     response = requests.post(url, json=payload, headers=headers)
     response.raise_for_status()
 
-    print("✅ ABHA enrolment successful.")
     return response.json()
 
 
-result = enrol_by_aadhaar(token, txn_id, otp_value, mobile)
-print(result)
+# result = enrol_by_aadhaar(token, txn_id, otp_value, mobile)
+# print(result)
 ########
 # aBHA ADDRESS SUGGETIONS
-x_token = result["tokens"]["token"]
+# x_token = result["tokens"]["token"]
 
 
 def get_abha_address_suggestions(token: str, txn_id: str):
@@ -137,8 +136,8 @@ def get_abha_address_suggestions(token: str, txn_id: str):
     return suggestions
 
 
-suggestions = get_abha_address_suggestions(token, txn_id)
-print(suggestions)
+# suggestions = get_abha_address_suggestions(token, txn_id)
+# print(suggestions)
 
 # SETTING ABHA ADDRESS
 
@@ -163,9 +162,9 @@ def set_abha_address(token, txn_id, abha_address):
     return data
 
 
-abha_address = "shivanshanand11"
-result = set_abha_address(token, txn_id, abha_address)
-print(result)
+# abha_address = "shivanshanand11"
+# result = set_abha_address(token, txn_id, abha_address)
+# print(result)
 
 
 ###get profile details
@@ -188,8 +187,8 @@ def get_abha_profile(token: str, x_token: str) -> dict:
     return response
 
 
-result = get_abha_profile(token, x_token)
-print(result.text)
+# result = get_abha_profile(token, x_token)
+# print(result.text)
 
 ###Download ABHA CARD
 
@@ -214,4 +213,4 @@ def download_abha_card(token: str, x_token: str):
     print("✅ ABHA Card downloaded as 'abha_card.pdf'")
 
 
-download_abha_card(token, x_token)
+# download_abha_card(token, x_token)

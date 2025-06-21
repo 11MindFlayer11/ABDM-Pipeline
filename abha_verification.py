@@ -1,23 +1,26 @@
 # abha_verification.py
-from utils import get_gateway_token, standard_headers, encrypt_rsa, get_bearer_token
+from utils import get_gateway_token, encrypt_rsa, get_bearer_token
 import requests
 from config import ABHA_BASE, CLIENT_ID, CLIENT_SECRET
 import uuid
 from datetime import datetime, timezone
 
 
-gateway_token = get_gateway_token()
-print("✅ Gateway Token fetched.")
+# gateway_token = get_gateway_token()
+# print("✅ Gateway Token fetched.")
 
-token = get_bearer_token(CLIENT_ID, CLIENT_SECRET)
-print("✅ Access Token fetched.")
+# token = get_bearer_token(CLIENT_ID, CLIENT_SECRET)
+# print("✅ Access Token fetched.")
 
-encrypted_abha_number = encrypt_rsa("91-2306-6677-1756", gateway_token)
+# encrypted_abha_number = encrypt_rsa("91-2306-6677-1756", gateway_token)
 
 
 ##Verify using aadhaar no otp
 # send otp
 def send_otp(token: str, encrypted_abha_number: str):
+    """
+    Send OTP for ABHA number verification using Aadhaar
+    """
     url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/request/otp"
 
     headers = {
@@ -46,10 +49,10 @@ def send_otp(token: str, encrypted_abha_number: str):
         return None
 
 
-txn_id = send_otp(token, encrypted_abha_number)
-# Verify OTP
-otp = input("Enter the OTP: ")
-encrypted_otp = encrypt_rsa(otp, gateway_token)
+# txn_id = send_otp(token, encrypted_abha_number)
+# # Verify OTP
+# otp = input("Enter the OTP: ")
+# encrypted_otp = encrypt_rsa(otp, gateway_token)
 
 
 def verify_otp(token: str, txn_id: str, encrypted_otp: str):
@@ -84,13 +87,16 @@ def verify_otp(token: str, txn_id: str, encrypted_otp: str):
         return None
 
 
-verify_otp(token, txn_id, encrypted_otp)
+# verify_otp(token, txn_id, encrypted_otp)
 
 
-##Verify using abha number's phone number
+# ##Verify using abha number's phone number
 
 
 def send_otp_abha_number(token: str, encrypted_abha_number: str):
+    """
+    Send OTP for ABHA number verification using mobile number
+    """
     url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/request/otp"
 
     headers = {
@@ -119,15 +125,15 @@ def send_otp_abha_number(token: str, encrypted_abha_number: str):
         return None
 
 
-txn_id = send_otp_abha_number(token, encrypted_abha_number)
+# txn_id = send_otp_abha_number(token, encrypted_abha_number)
 
 
-otp = input("Enter the OTP: ")
-encrypted_otp = encrypt_rsa(otp, gateway_token)
+# otp = input("Enter the OTP: ")
+# encrypted_otp = encrypt_rsa(otp, gateway_token)
 
 
 def verify_otp_abha_number(token: str, txn_id: str, encrypted_otp: str):
-    """Send request to verify OTP using txnId and encrypted OTP"""
+    """Send request to verify OTP using txnId and encrypted OTP for ABHA number"""
 
     url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/verify"
 
@@ -158,14 +164,17 @@ def verify_otp_abha_number(token: str, txn_id: str, encrypted_otp: str):
         return None
 
 
-verify_otp_abha_number(token, txn_id, encrypted_otp)
+# verify_otp_abha_number(token, txn_id, encrypted_otp)
 
-###Verify using AADHAAR
+# ###Verify using AADHAAR
 
-encrypted_aadhaar_number = encrypt_rsa("521527681066", gateway_token)
+# encrypted_aadhaar_number = encrypt_rsa("521527681066", gateway_token)
 
 
 def send_otp_aadhaar(token: str, encrypted_aadhaar_number: str):
+    """
+    Send OTP for verification using Aadhaar number
+    """
     url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/request/otp"
 
     headers = {
@@ -194,15 +203,15 @@ def send_otp_aadhaar(token: str, encrypted_aadhaar_number: str):
         return None
 
 
-txn_id = send_otp_abha_number(token, encrypted_abha_number)
+# txn_id = send_otp_abha_number(token, encrypted_abha_number)
 
 
-otp = input("Enter the OTP: ")
-encrypted_otp = encrypt_rsa(otp, gateway_token)
+# otp = input("Enter the OTP: ")
+# encrypted_otp = encrypt_rsa(otp, gateway_token)
 
 
 def verify_otp_aadhaar(token: str, txn_id: str, encrypted_otp: str):
-    """Send request to verify OTP using txnId and encrypted OTP"""
+    """Send request to verify OTP using txnId and encrypted OTP for Aadhaar"""
 
     url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/verify"
 
@@ -233,4 +242,4 @@ def verify_otp_aadhaar(token: str, txn_id: str, encrypted_otp: str):
         return None
 
 
-verify_otp_abha_number(token, txn_id, encrypted_otp)
+# verify_otp_abha_number(token, txn_id, encrypted_otp)
