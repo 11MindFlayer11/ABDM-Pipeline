@@ -42,7 +42,7 @@ def create_abha_with_aadhaar():
             else:
                 return "Thankyou"
     except Exception:
-        print("Wrong OTP/Number")
+        print("Wrong OTP")
         return
 
     x_token = result["tokens"]["token"]
