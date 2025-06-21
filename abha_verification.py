@@ -1,7 +1,7 @@
 # abha_verification.py
-from utils import get_gateway_token, encrypt_rsa, get_bearer_token
+# from utils import get_gateway_token, encrypt_rsa, get_bearer_token
 import requests
-from config import ABHA_BASE, CLIENT_ID, CLIENT_SECRET
+from config import CLIENT_ID, CLIENT_SECRET
 import uuid
 from datetime import datetime, timezone
 

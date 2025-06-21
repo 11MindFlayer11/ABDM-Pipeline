@@ -1,8 +1,6 @@
 # abha_creation.py
 
-from utils import get_gateway_token, encrypt_rsa, get_bearer_token
 import requests
-from config import ABHA_BASE, CLIENT_ID, CLIENT_SECRET
 import uuid
 from datetime import datetime, timezone
 
@@ -50,12 +48,11 @@ def request_abha_otp(token: str, encrypted_aadhaar: str) -> str:
     }
 
     response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
+    # response.raise_for_status()
 
     data = response.json()
     txn_id = data.get("txnId")
 
-    print("✅ OTP sent. Transaction ID:", txn_id)
     return txn_id
 
 
@@ -104,7 +101,7 @@ def enrol_by_aadhaar(token: str, txn_id: str, encrypted_otp: str, mobile: str):
     }
 
     response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
+    # response.raise_for_status()
 
     return response.json()
 
@@ -129,7 +126,7 @@ def get_abha_address_suggestions(token: str, txn_id: str):
     }
 
     response = requests.get(url, headers=headers)
-    response.raise_for_status()
+    # response.raise_for_status()
 
     suggestions = response.json().get("abhaAddressList", [])
     print("✅ ABHA address suggestions:", suggestions)
@@ -155,7 +152,7 @@ def set_abha_address(token, txn_id, abha_address):
     payload = {"txnId": txn_id, "abhaAddress": abha_address, "preferred": 1}
 
     response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
+    # response.raise_for_status()
 
     data = response.json()
     print("✅ ABHA Address set successfully:", data.get("preferredAbhaAddress"))
@@ -206,7 +203,7 @@ def download_abha_card(token: str, x_token: str):
     }
 
     response = requests.get(url, headers=headers)
-    response.raise_for_status()
+    # response.raise_for_status()
     # Save the PDF or image
     with open("abha_card.jpg", "wb") as f:
         f.write(response.content)
