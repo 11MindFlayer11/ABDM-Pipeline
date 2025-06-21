@@ -1,6 +1,7 @@
-# abha_creation.py
-
+# abha_verification.py
+# from utils import get_gateway_token, encrypt_rsa, get_bearer_token
 import requests
+from config import CLIENT_ID, CLIENT_SECRET
 import uuid
 from datetime import datetime, timezone
 
@@ -11,203 +12,234 @@ from datetime import datetime, timezone
 # token = get_bearer_token(CLIENT_ID, CLIENT_SECRET)
 # print("✅ Access Token fetched.")
 
-# Creation of ABHA
-
-##Thru aadhaar OTP
-
-# encrypted_aadhaar = encrypt_rsa("521527681066", gateway_token)
+# encrypted_abha_number = encrypt_rsa("91-2306-6677-1756", gateway_token)
 
 
-# Requeest otp for enrolment
-def request_abha_otp(token: str, encrypted_aadhaar: str) -> str:
+##Verify using aadhaar no otp
+# send otp
+def send_otp(token: str, encrypted_abha_number: str):
     """
-    Sends OTP to Aadhaar-linked mobile number for ABHA enrolment.
-
-    Args:
-        token (str): Bearer token.
-        encrypted_aadhaar (str): Aadhaar number encrypted using ABDM public RSA key.
-
-    Returns:
-        str: txnId from the response, required for verifying OTP later.
+    Send OTP for ABHA number verification using Aadhaar
     """
-
-    url = "https://abhasbx.abdm.gov.in/abha/api/v3/enrollment/request/otp"
+    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/request/otp"
 
     headers = {
+        "Authorization": f"Bearer {token}",
         "REQUEST-ID": str(uuid.uuid4()),
         "TIMESTAMP": datetime.utcnow().isoformat() + "Z",
-        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
 
-    payload = {
-        "scope": ["abha-enrol"],
-        "loginHint": "aadhaar",
-        "loginId": encrypted_aadhaar,
+    body = {
+        "scope": ["abha-login", "aadhaar-verify"],
+        "loginHint": "abha-number",
+        "loginId": encrypted_abha_number,
         "otpSystem": "aadhaar",
     }
 
-    response = requests.post(url, json=payload, headers=headers)
-    # response.raise_for_status()
+    response = requests.post(url, headers=headers, json=body)
 
-    data = response.json()
-    txn_id = data.get("txnId")
+    if response.status_code == 200:
+        print("✅ OTP sent successfully!")
+        txn_id = response.json().get("txnId")
+        print("Transaction ID:", txn_id)
+        return txn_id
+    else:
+        print(f"❌ Error {response.status_code}: {response.text}")
+        return None
 
-    return txn_id
 
-
-# txn_id = request_abha_otp(token, encrypted_aadhaar)
-
-# enrol by aadhar verification
+# txn_id = send_otp(token, encrypted_abha_number)
+# # Verify OTP
 # otp = input("Enter the OTP: ")
-# otp_value = encrypt_rsa(otp, gateway_token)
-# mobile = "8839843815"
+# encrypted_otp = encrypt_rsa(otp, gateway_token)
 
 
-def enrol_by_aadhaar(token: str, txn_id: str, encrypted_otp: str, mobile: str):
-    """
-    Verifies OTP and completes ABHA enrollment.
+def verify_otp(token: str, txn_id: str, encrypted_otp: str):
+    """Send request to verify OTP using txnId and encrypted OTP"""
 
-    Args:
-        token (str): Bearer token.
-        txn_id (str): Transaction ID from OTP request.
-        encrypted_otp (str): Encrypted OTP value.
-        mobile (str): Aadhaar-linked mobile number (unencrypted).
-
-    Returns:
-        dict: Full response including ABHA number, profile, etc.
-    """
-
-    url = "https://abhasbx.abdm.gov.in/abha/api/v3/enrollment/enrol/byAadhaar"
+    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/verify"
 
     headers = {
         "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
         "REQUEST-ID": str(uuid.uuid4()),
         "TIMESTAMP": datetime.utcnow().isoformat() + "Z",
+        "Content-Type": "application/json",
     }
 
     payload = {
+        "scope": ["abha-login", "aadhaar-verify"],
         "authData": {
             "authMethods": ["otp"],
-            "otp": {
-                "timeStamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "txnId": txn_id,
-                "otpValue": encrypted_otp,
-                "mobile": mobile,
-            },
+            "otp": {"txnId": txn_id, "otpValue": encrypted_otp},
         },
-        "consent": {"code": "abha-enrollment", "version": "1.4"},
     }
 
-    response = requests.post(url, json=payload, headers=headers)
-    # response.raise_for_status()
+    response = requests.post(url, headers=headers, json=payload)
 
-    return response.json()
+    if response.status_code == 200:
+        data = response.json()
+        print("✅ OTP Verified Successfully.")
+        print("Token:", data.get("token"))
+        return data.get("token")
+    else:
+        print(f"❌ Error {response.status_code}: {response.text}")
+        return None
 
 
-# result = enrol_by_aadhaar(token, txn_id, otp_value, mobile)
-# print(result)
-########
-# aBHA ADDRESS SUGGETIONS
-# x_token = result["tokens"]["token"]
+# verify_otp(token, txn_id, encrypted_otp)
 
 
-def get_abha_address_suggestions(token: str, txn_id: str):
-    url = "https://abhasbx.abdm.gov.in/abha/api/v3/enrollment/enrol/suggestion"
+# ##Verify using abha number's phone number
+
+
+def send_otp_abha_number(token: str, encrypted_abha_number: str):
+    """
+    Send OTP for ABHA number verification using mobile number
+    """
+    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/request/otp"
 
     headers = {
         "Authorization": f"Bearer {token}",
-        "Transaction_Id": txn_id,
         "REQUEST-ID": str(uuid.uuid4()),
-        "TIMESTAMP": datetime.now(timezone.utc)
-        .isoformat(timespec="milliseconds")
-        .replace("+00:00", "Z"),
-    }
-
-    response = requests.get(url, headers=headers)
-    # response.raise_for_status()
-
-    suggestions = response.json().get("abhaAddressList", [])
-    print("✅ ABHA address suggestions:", suggestions)
-    return suggestions
-
-
-# suggestions = get_abha_address_suggestions(token, txn_id)
-# print(suggestions)
-
-# SETTING ABHA ADDRESS
-
-
-def set_abha_address(token, txn_id, abha_address):
-    url = "https://abhasbx.abdm.gov.in/abha/api/v3/enrollment/enrol/abha-address"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "REQUEST-ID": str(uuid.uuid4()),
-        "TIMESTAMP": datetime.now(timezone.utc)
-        .isoformat(timespec="milliseconds")
-        .replace("+00:00", "Z"),
+        "TIMESTAMP": datetime.utcnow().isoformat() + "Z",
         "Content-Type": "application/json",
     }
-    payload = {"txnId": txn_id, "abhaAddress": abha_address, "preferred": 1}
 
-    response = requests.post(url, json=payload, headers=headers)
-    # response.raise_for_status()
+    body = {
+        "scope": ["abha-login", "mobile-verify"],
+        "loginHint": "abha-number",
+        "loginId": encrypted_abha_number,
+        "otpSystem": "abdm",
+    }
 
-    data = response.json()
-    print("✅ ABHA Address set successfully:", data.get("preferredAbhaAddress"))
-    return data
+    response = requests.post(url, headers=headers, json=body)
+
+    if response.status_code == 200:
+        print("✅ OTP sent successfully!")
+        txn_id = response.json().get("txnId")
+        print("Transaction ID:", txn_id)
+        return txn_id
+    else:
+        print(f"❌ Error {response.status_code}: {response.text}")
+        return None
 
 
-# abha_address = "shivanshanand11"
-# result = set_abha_address(token, txn_id, abha_address)
-# print(result)
+# txn_id = send_otp_abha_number(token, encrypted_abha_number)
 
 
-###get profile details
-def get_abha_profile(token: str, x_token: str) -> dict:
-    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/account"
+# otp = input("Enter the OTP: ")
+# encrypted_otp = encrypt_rsa(otp, gateway_token)
+
+
+def verify_otp_abha_number(token: str, txn_id: str, encrypted_otp: str):
+    """Send request to verify OTP using txnId and encrypted OTP for ABHA number"""
+
+    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/verify"
 
     headers = {
         "Authorization": f"Bearer {token}",
-        "X-token": f"Bearer {x_token}",
         "REQUEST-ID": str(uuid.uuid4()),
-        "TIMESTAMP": datetime.now(timezone.utc)
-        .isoformat(timespec="milliseconds")
-        .replace("+00:00", "Z"),
+        "TIMESTAMP": datetime.utcnow().isoformat() + "Z",
+        "Content-Type": "application/json",
     }
 
-    response = requests.get(url, headers=headers)
+    payload = {
+        "scope": ["abha-login", "mobile-verify"],
+        "authData": {
+            "authMethods": ["otp"],
+            "otp": {"txnId": txn_id, "otpValue": encrypted_otp},
+        },
+    }
 
-    response.status_code == 200
-    print("✅ Success! ABHA profile details:")
-    return response
+    response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        data = response.json()
+        print("✅ OTP Verified Successfully.")
+        print("Token:", data.get("token"))
+        return data.get("token")
+    else:
+        print(f"❌ Error {response.status_code}: {response.text}")
+        return None
 
 
-# result = get_abha_profile(token, x_token)
-# print(result.text)
+# verify_otp_abha_number(token, txn_id, encrypted_otp)
 
-###Download ABHA CARD
+# ###Verify using AADHAAR
+
+# encrypted_aadhaar_number = encrypt_rsa("521527681066", gateway_token)
 
 
-def download_abha_card(token: str, x_token: str):
-    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/account/abha-card"
+def send_otp_aadhaar(token: str, encrypted_aadhaar_number: str):
+    """
+    Send OTP for verification using Aadhaar number
+    """
+    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/request/otp"
 
     headers = {
         "Authorization": f"Bearer {token}",
-        "X-Token": f"Bearer {x_token}",
         "REQUEST-ID": str(uuid.uuid4()),
-        "TIMESTAMP": datetime.now(timezone.utc)
-        .isoformat(timespec="milliseconds")
-        .replace("+00:00", "Z"),
+        "TIMESTAMP": datetime.utcnow().isoformat() + "Z",
+        "Content-Type": "application/json",
     }
 
-    response = requests.get(url, headers=headers)
-    # response.raise_for_status()
-    # Save the PDF or image
-    with open("abha_card.jpg", "wb") as f:
-        f.write(response.content)
-    print("✅ ABHA Card downloaded as 'abha_card.jpg'")
+    body = {
+        "scope": ["abha-login", "aadhaar-verify"],
+        "loginHint": "aadhaar",
+        "loginId": encrypted_aadhaar_number,
+        "otpSystem": "aadhaar",
+    }
+
+    response = requests.post(url, headers=headers, json=body)
+
+    if response.status_code == 200:
+        print("✅ OTP sent successfully!")
+        txn_id = response.json().get("txnId")
+        print("Transaction ID:", txn_id)
+        return txn_id
+    else:
+        print(f"❌ Error {response.status_code}: {response.text}")
+        return None
 
 
-# download_abha_card(token, x_token)
+# txn_id = send_otp_abha_number(token, encrypted_abha_number)
+
+
+# otp = input("Enter the OTP: ")
+# encrypted_otp = encrypt_rsa(otp, gateway_token)
+
+
+def verify_otp_aadhaar(token: str, txn_id: str, encrypted_otp: str):
+    """Send request to verify OTP using txnId and encrypted OTP for Aadhaar"""
+
+    url = "https://abhasbx.abdm.gov.in/abha/api/v3/profile/login/verify"
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "REQUEST-ID": str(uuid.uuid4()),
+        "TIMESTAMP": datetime.utcnow().isoformat() + "Z",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "scope": ["abha-login", "aadhaar-verify"],
+        "authData": {
+            "authMethods": ["otp"],
+            "otp": {"txnId": txn_id, "otpValue": encrypted_otp},
+        },
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        data = response.json()
+        print("✅ OTP Verified Successfully.")
+        print("Token:", data.get("token"))
+        return data.get("token")
+    else:
+        print(f"❌ Error {response.status_code}: {response.text}")
+        return None
+
+
+# verify_otp_abha_number(token, txn_id, encrypted_otp)
